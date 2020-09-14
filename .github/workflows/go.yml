@@ -1,0 +1,31 @@
+# Github Actions CI/CD
+
+name: Go
+
+on:
+  push:
+    branches: [develop]
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go 1.14
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.14
+        id: go
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+
+      - name: Build and Package for Lambda
+        run: make package
+
+      - name: Deploy to Development
+        env:
+          AWS_DEFAULT_REGION: ${{ secrets.RSGISCI_AWS_DEFAULT_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.RSGISCI_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.RSGISCI_AWS_SECRET_ACCESS_KEY }}
+        run: make deploy

@@ -1,0 +1,104 @@
+{
+	"info": {
+		"_postman_id": "688ec8f8-ab68-4b47-bbc5-e5b1261ba443",
+		"name": "consequences-regression",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "GetSomething",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "6733036e-0912-4b7c-8e48-1d5878255e04",
+						"exec": [
+							"// validate JSON schema",
+							"var schema = {",
+							"    \"type\": \"object\",",
+							"    \"properties\": {",
+							"        \"name\": { \"type\": \"string\" },",
+							"    },",
+							"    \"required\": [\"name\"],",
+							"    \"additionalProperties\": false",
+							"}",
+							"",
+							"pm.globals.set('SOMETHING_OBJ_SCHEMA', JSON.stringify(schema));",
+							"",
+							"// status code is 200",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"// validate schema",
+							"pm.test(\"Schema validation\", function () {",
+							"    pm.response.to.have.jsonSchema(schema)",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/consequences/test",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"consequences",
+						"test"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{jwt}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "9528000e-5f27-4e49-8d26-796bdb61a3c0",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "81465104-d87b-4bd8-8920-b1ad36a81754",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"protocolProfileBehavior": {}
+}
