@@ -1,8 +1,9 @@
 package models
 
 import (
-	"consequences-api/api/consequences"
 	"encoding/json"
+
+	"github.com/USACE/go-consequences/consequences"
 )
 
 // ConsequencesInput is input
@@ -50,12 +51,15 @@ type ConsequencesInputAndResult struct {
 // RunConsequences Runs the Consequences
 func RunConsequences(d ConsequencesInputCollection) ([]ConsequencesInputAndResult, error) {
 	ss := make([]ConsequencesInputAndResult, len(d.Items))
-	for idx, dd := range d.Items {
-		ret := consequences.BaseStructure().ComputeConsequences(dd.Depth)
-		s := ConsequencesInputAndResult{}
-		s.ConsequencesInput = dd
-		s.ConsequencesResult = ConsequencesResult{Name: "Test", Result: ret.String()}
-		ss[idx] = s
+	for idx, item := range d.Items {
+		result := consequences.BaseStructure().ComputeConsequences(item.Depth)
+		ss[idx] = ConsequencesInputAndResult{
+			ConsequencesInput: item,
+			ConsequencesResult: ConsequencesResult{
+				Name:   "Test",
+				Result: result.String(),
+			},
+		}
 	}
 	return ss, nil
 }

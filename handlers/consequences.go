@@ -1,8 +1,9 @@
 package handlers
 
 import (
-	"consequences-api/api/models"
 	"net/http"
+
+	"github.com/USACE/consequences-api/models"
 
 	"github.com/labstack/echo/v4"
 )
