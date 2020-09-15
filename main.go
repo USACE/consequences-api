@@ -8,8 +8,8 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	"github.com/labstack/echo/v4"
 
-	"consequences-api/api/handlers"
-	"consequences-api/api/middleware"
+	"github.com/USACE/consequences-api/handlers"
+	"github.com/USACE/consequences-api/middleware"
 )
 
 // Config holds all runtime configuration provided via environment variables
