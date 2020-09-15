@@ -6,7 +6,7 @@
 	},
 	"item": [
 		{
-			"name": "GetSomething",
+			"name": "RunConsequences",
 			"event": [
 				{
 					"listen": "test",
@@ -39,15 +39,12 @@
 					}
 				}
 			],
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
 			"request": {
-				"method": "GET",
+				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "",
+					"raw": "[\n    {\n        \"depth\": 1\n    },\n    {\n        \"depth\": 2\n    },\n    {\n        \"depth\": 3\n    },\n    {\n        \"depth\": 4\n    }\n]",
 					"options": {
 						"raw": {
 							"language": "json"

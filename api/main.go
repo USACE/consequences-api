@@ -52,7 +52,7 @@ func main() {
 
 	// Public Routes
 	// NOTE: ALL GET REQUESTS ARE ALLOWED WITHOUT AUTHENTICATION USING JWTConfig Skipper. See appconfig/jwt.go
-	public.GET("consequences/test", handlers.RunConsequences())
+	public.POST("consequences/test", handlers.RunConsequences())
 
 	if cfg.LambdaContext {
 		log.Print("starting server; Running On AWS LAMBDA")
