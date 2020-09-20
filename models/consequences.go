@@ -4,11 +4,30 @@ import (
 	"encoding/json"
 
 	"github.com/USACE/go-consequences/consequences"
+	"github.com/USACE/go-consequences/nsi"
 )
+
+//ConsequencesBoundingBox is a list of x,y representing a square
+type ConsequencesBoundingBox struct {
+	BoundingBox string `json:"bbox"`
+}
+
+//ConsequencesStructure is a structure FDID and x,y location
+type ConsequencesStructure struct {
+	X     float64 `json:"x"`
+	Y     float64 `json:"y"`
+	FD_ID string  `json:"fd_id"`
+}
+
+//ConsequencesStructureInventory is a list of ConsequencesStructure
+type ConsequencesStructureInventory struct {
+	Inventory []ConsequencesStructure `json:"structures"`
+}
 
 // ConsequencesInput is input
 type ConsequencesInput struct {
-	Depth float64 `json:"depth"`
+	Structure ConsequencesStructure `json:"structure"`
+	Depth     float64               `json:"depth"`
 }
 
 // ConsequencesInputCollection is many consequences inputs
@@ -62,4 +81,19 @@ func RunConsequences(d ConsequencesInputCollection) ([]ConsequencesInputAndResul
 		}
 	}
 	return ss, nil
+}
+
+// RunConsequences Runs the Consequences
+func GetInventory(d ConsequencesBoundingBox) (ConsequencesStructureInventory, error) {
+	structures := nsi.GetByBbox(d.BoundingBox) //i'd like to save this in memory while I wait on IFIM to request damages...
+	result := make([]ConsequencesStructure, len(structures))
+	for idx, structure := range structures {
+		result[idx] = ConsequencesStructure{
+			X:     structure.X,
+			Y:     structure.Y,
+			FD_ID: structure.Name,
+		}
+	}
+	inventory := ConsequencesStructureInventory{Inventory: result}
+	return inventory, nil
 }

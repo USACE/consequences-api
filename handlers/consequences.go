@@ -22,3 +22,16 @@ func RunConsequences() echo.HandlerFunc {
 		return c.JSON(http.StatusOK, s)
 	}
 }
+func GetStructureLocations() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var i models.ConsequencesBoundingBox
+		if err := c.Bind(&i); err != nil {
+			return c.String(http.StatusBadRequest, "Invalid Input")
+		}
+		s, err := models.GetInventory(i)
+		if err != nil {
+			return c.String(http.StatusInternalServerError, err.Error())
+		}
+		return c.JSON(http.StatusOK, s)
+	}
+}
