@@ -67,12 +67,28 @@ type ConsequencesInputAndResult struct {
 	ConsequencesResult
 }
 
-// RunConsequences Runs the Consequences
-func RunConsequences(d ConsequencesInputCollection) ([]ConsequencesInputAndResult, error) {
-	ss := make([]ConsequencesInputAndResult, len(d.Items))
-	for idx, item := range d.Items {
+// RunConsequencesByBoundingBox Runs the Consequences by bounding box
+func RunConsequencesByBoundingBox(cbb ConsequencesBoundingBox) ([]ConsequencesInputAndResult, error) {
+	structures := nsi.GetByBbox(cbb.BoundingBox) //i'd like to save this in memory while I wait on IFIM to request damages...
+	ifimRequest := make([]ConsequencesStructure, len(structures))
+	for idx, structure := range structures {
+		ifimRequest[idx] = ConsequencesStructure{
+			X:     structure.X,
+			Y:     structure.Y,
+			FD_ID: structure.Name,
+		}
+	}
+
+	//query IFIM for depths
+	ifimResponse := make([]ConsequencesInput, len(ifimRequest))
+	for idx, location := range ifimRequest {
+		ifimResponse[idx] = ConsequencesInput{Structure: location, Depth: 5.0}
+	}
+
+	output := make([]ConsequencesInputAndResult, len(ifimResponse))
+	for idx, item := range ifimResponse {
 		result := consequences.BaseStructure().ComputeConsequences(item.Depth)
-		ss[idx] = ConsequencesInputAndResult{
+		output[idx] = ConsequencesInputAndResult{
 			ConsequencesInput: item,
 			ConsequencesResult: ConsequencesResult{
 				Name:   "Test",
@@ -81,19 +97,4 @@ func RunConsequences(d ConsequencesInputCollection) ([]ConsequencesInputAndResul
 		}
 	}
 	return ss, nil
-}
-
-// RunConsequences Runs the Consequences
-func GetInventory(d ConsequencesBoundingBox) (ConsequencesStructureInventory, error) {
-	structures := nsi.GetByBbox(d.BoundingBox) //i'd like to save this in memory while I wait on IFIM to request damages...
-	result := make([]ConsequencesStructure, len(structures))
-	for idx, structure := range structures {
-		result[idx] = ConsequencesStructure{
-			X:     structure.X,
-			Y:     structure.Y,
-			FD_ID: structure.Name,
-		}
-	}
-	inventory := ConsequencesStructureInventory{Inventory: result}
-	return inventory, nil
 }
