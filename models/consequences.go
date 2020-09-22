@@ -96,5 +96,5 @@ func RunConsequencesByBoundingBox(cbb ConsequencesBoundingBox) ([]ConsequencesIn
 			},
 		}
 	}
-	return ss, nil
+	return output, nil
 }
