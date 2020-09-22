@@ -4,11 +4,30 @@ import (
 	"encoding/json"
 
 	"github.com/USACE/go-consequences/consequences"
+	"github.com/USACE/go-consequences/nsi"
 )
+
+//ConsequencesBoundingBox is a list of x,y representing a square
+type ConsequencesBoundingBox struct {
+	BoundingBox string `json:"bbox"`
+}
+
+//ConsequencesStructure is a structure FDID and x,y location
+type ConsequencesStructure struct {
+	X     float64 `json:"x"`
+	Y     float64 `json:"y"`
+	FD_ID string  `json:"fd_id"`
+}
+
+//ConsequencesStructureInventory is a list of ConsequencesStructure
+type ConsequencesStructureInventory struct {
+	Inventory []ConsequencesStructure `json:"structures"`
+}
 
 // ConsequencesInput is input
 type ConsequencesInput struct {
-	Depth float64 `json:"depth"`
+	Structure ConsequencesStructure `json:"structure"`
+	Depth     float64               `json:"depth"`
 }
 
 // ConsequencesInputCollection is many consequences inputs
@@ -48,12 +67,28 @@ type ConsequencesInputAndResult struct {
 	ConsequencesResult
 }
 
-// RunConsequences Runs the Consequences
-func RunConsequences(d ConsequencesInputCollection) ([]ConsequencesInputAndResult, error) {
-	ss := make([]ConsequencesInputAndResult, len(d.Items))
-	for idx, item := range d.Items {
+// RunConsequencesByBoundingBox Runs the Consequences by bounding box
+func RunConsequencesByBoundingBox(cbb ConsequencesBoundingBox) ([]ConsequencesInputAndResult, error) {
+	structures := nsi.GetByBbox(cbb.BoundingBox) //i'd like to save this in memory while I wait on IFIM to request damages...
+	ifimRequest := make([]ConsequencesStructure, len(structures))
+	for idx, structure := range structures {
+		ifimRequest[idx] = ConsequencesStructure{
+			X:     structure.X,
+			Y:     structure.Y,
+			FD_ID: structure.Name,
+		}
+	}
+
+	//query IFIM for depths
+	ifimResponse := make([]ConsequencesInput, len(ifimRequest))
+	for idx, location := range ifimRequest {
+		ifimResponse[idx] = ConsequencesInput{Structure: location, Depth: 5.0}
+	}
+
+	output := make([]ConsequencesInputAndResult, len(ifimResponse))
+	for idx, item := range ifimResponse {
 		result := consequences.BaseStructure().ComputeConsequences(item.Depth)
-		ss[idx] = ConsequencesInputAndResult{
+		output[idx] = ConsequencesInputAndResult{
 			ConsequencesInput: item,
 			ConsequencesResult: ConsequencesResult{
 				Name:   "Test",
