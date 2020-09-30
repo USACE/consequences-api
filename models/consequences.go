@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/USACE/go-consequences/consequences"
+	"github.com/USACE/go-consequences/hazards"
 	"github.com/USACE/go-consequences/nsi"
 )
 
@@ -87,7 +88,8 @@ func RunConsequencesByBoundingBox(cbb ConsequencesBoundingBox) ([]ConsequencesIn
 
 	output := make([]ConsequencesInputAndResult, len(ifimResponse))
 	for idx, item := range ifimResponse {
-		result := consequences.BaseStructure().ComputeConsequences(item.Depth)
+		d := hazards.DepthEvent{Depth: item.Depth}
+		result := consequences.BaseStructure().ComputeConsequences(d)
 		output[idx] = ConsequencesInputAndResult{
 			ConsequencesInput: item,
 			ConsequencesResult: ConsequencesResult{
