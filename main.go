@@ -52,8 +52,14 @@ func main() {
 
 	// Public Routes
 	// NOTE: ALL GET REQUESTS ARE ALLOWED WITHOUT AUTHENTICATION USING JWTConfig Skipper. See appconfig/jwt.go
-	public.POST("consequences/compute", handlers.RunConsequencesByBoundingBox()) //have the bbox
-	//public.POST("consequences/bbox", handlers.GetStructureLocations())
+	public.POST("consequences/computes/bbox", handlers.RunConsequencesByBoundingBox()) //have the bbox
+	public.POST("consequences/computes/fips/:fips_code", handlers.RunConsequencesByFips())
+
+	public.GET("consequences/computes", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, map[string][]string{
+			"computes": []string{"bbox", "fips"},
+		})
+	})
 
 	if cfg.LambdaContext {
 		log.Print("starting server; Running On AWS LAMBDA")
