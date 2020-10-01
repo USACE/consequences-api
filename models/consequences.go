@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/USACE/go-consequences/consequences"
 	"github.com/USACE/go-consequences/hazards"
 	"github.com/USACE/go-consequences/nsi"
 )
@@ -90,8 +89,8 @@ func RunConsequencesByBoundingBox(cbb ConsequencesBoundingBox) ([]ConsequencesIn
 
 	output := make([]ConsequencesInputAndResult, len(ifimResponse))
 	for idx, item := range ifimResponse {
-		//d := hazards.DepthEvent{Depth: item.Depth}
-		result := consequences.BaseStructure().ComputeConsequences(5.0)
+		d := hazards.DepthEvent{Depth: item.Depth}
+		result := structures[idx].ComputeConsequences(d)
 		output[idx] = ConsequencesInputAndResult{
 			ConsequencesInput: item,
 			ConsequencesResult: ConsequencesResult{
@@ -114,19 +113,20 @@ func RunConsequencesByFips(fips string) (string, error) {
 		}
 	}
 	elapsedNsi := time.Since(startnsi)
-	//query IFIM for depths
-	ifimResponse := make([]ConsequencesInput, len(ifimRequest))
-	for idx, location := range ifimRequest {
-		ifimResponse[idx] = ConsequencesInput{Structure: location, Depth: 5.46}
-	}
-
+	/*
+		//query IFIM for depths
+		ifimResponse := make([]ConsequencesInput, len(ifimRequest))
+		for idx, location := range ifimRequest {
+			ifimResponse[idx] = ConsequencesInput{Structure: location, Depth: 5.46}
+		}
+	*/
 	startcompute := time.Now()
 	var count = 0
-	for idx, item := range ifimResponse {
-		d := hazards.DepthEvent{Depth: item.Depth}
-		consequences.BaseStructure().ComputeConsequences(d)
+	for idx, str := range structures {
+		str.ComputeConsequences(5.46)
 		count = idx
 	}
+
 	count += 1
 	elapsed := time.Since(startcompute)
 	output := fmt.Sprintf("NSI Fetching took %s Compute took %s for %d structures", elapsedNsi, elapsed, count)
