@@ -90,8 +90,8 @@ func RunConsequencesByBoundingBox(cbb ConsequencesBoundingBox) ([]ConsequencesIn
 
 	output := make([]ConsequencesInputAndResult, len(ifimResponse))
 	for idx, item := range ifimResponse {
-		d := hazards.DepthEvent{Depth: item.Depth}
-		result := consequences.BaseStructure().ComputeConsequences(d)
+		//d := hazards.DepthEvent{Depth: item.Depth}
+		result := consequences.BaseStructure().ComputeConsequences(5.0)
 		output[idx] = ConsequencesInputAndResult{
 			ConsequencesInput: item,
 			ConsequencesResult: ConsequencesResult{
