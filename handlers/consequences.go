@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/USACE/consequences-api/models"
+	"github.com/USACE/go-consequences/compute"
 
 	"github.com/labstack/echo/v4"
 )
@@ -11,7 +12,7 @@ import (
 // RunConsequences lists alerts for a single instrument
 func RunConsequencesByBoundingBox() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		var i models.ConsequencesBoundingBox
+		var i compute.Bbox
 		if err := c.Bind(&i); err != nil {
 			return c.String(http.StatusBadRequest, "Invalid Input")
 		}
@@ -30,10 +31,11 @@ func RunConsequencesByFips() echo.HandlerFunc {
 		if fips == "" {
 			return c.String(http.StatusBadRequest, "Invalid Input")
 		}
-		s, err := models.RunConsequencesByFips(fips)
+		var i = compute.FipsCode{FIPS: fips}
+		s, err := models.RunConsequencesByFips(i)
 		if err != nil {
 			return c.String(http.StatusInternalServerError, err.Error())
 		}
-		return c.String(http.StatusOK, s)
+		return c.JSON(http.StatusOK, s)
 	}
 }
