@@ -1,12 +1,15 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/apex/gateway"
+	"github.com/jmoiron/sqlx"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/labstack/echo/v4"
+	_ "github.com/lib/pq"
 
 	"github.com/USACE/consequences-api/handlers"
 	"github.com/USACE/consequences-api/middleware"
@@ -14,7 +17,23 @@ import (
 
 // Config holds all runtime configuration provided via environment variables
 type Config struct {
+	SkipJWT       bool
 	LambdaContext bool
+	DBUser        string
+	DBPass        string
+	DBName        string
+	DBHost        string
+	DBSSLMode     string
+}
+
+// Connection is a database connnection
+func Connection(connStr string) *sqlx.DB {
+	log.Printf("Getting database connection")
+	db, err := sqlx.Open("postgres", connStr)
+	if err != nil || db == nil {
+		log.Fatal("Could not connect to database; ", err.Error())
+	}
+	return db
 }
 
 func main() {
@@ -41,6 +60,14 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
+	db := Connection(
+		fmt.Sprintf(
+			"user=%s password=%s dbname=%s host=%s sslmode=%s binary_parameters=yes",
+			cfg.DBUser, cfg.DBPass, cfg.DBName, cfg.DBHost, cfg.DBSSLMode,
+		),
+	)
+	fmt.Println(db)
+
 	e := echo.New()
 	e.Use(
 		middleware.CORS,
@@ -50,10 +77,28 @@ func main() {
 	// Public Routes
 	public := e.Group("")
 
+	// Private Routes
+	private := e.Group("")
+	if cfg.SkipJWT == true {
+		private.Use(middleware.MockIsLoggedIn)
+	} else {
+		private.Use(middleware.JWT, middleware.IsLoggedIn)
+	}
+
 	// Public Routes
 	// NOTE: ALL GET REQUESTS ARE ALLOWED WITHOUT AUTHENTICATION USING JWTConfig Skipper. See appconfig/jwt.go
-	public.POST("consequences/computes/bbox", handlers.RunConsequencesByBoundingBox()) //have the bbox
-	public.POST("consequences/computes/fips/:fips_code", handlers.RunConsequencesByFips())
+
+	// Events
+	public.GET("consequences/events", handlers.ListEvents(db))
+	private.POST("consequences/events", handlers.CreateEvent(db))
+	private.DELETE("consequences/events/:event_id", handlers.DeleteEvent(db))
+
+	// Computes
+	// public.GET("consequences/computes", handlers.ListComputes(db))
+	// public.GET("consequences/computes/:compute_id", handlers.GetCompute(db))
+	// public.GET("consequences/computes/:compute_id/result", handlers.GetComputeResult(db))
+	private.POST("consequences/computes/bbox", handlers.RunConsequencesByBoundingBox()) //have the bbox
+	private.POST("consequences/computes/fips/:fips_code", handlers.RunConsequencesByFips())
 
 	public.GET("consequences/computes", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string][]string{
