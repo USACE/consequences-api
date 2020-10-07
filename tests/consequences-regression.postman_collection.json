@@ -1,17 +1,87 @@
 {
 	"info": {
-		"_postman_id": "688ec8f8-ab68-4b47-bbc5-e5b1261ba443",
+		"_postman_id": "71b99466-23cf-47fe-92c2-fce0808fdf12",
 		"name": "consequences-regression",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
+		{
+			"name": "Events",
+			"item": [
+				{
+					"name": "ListEvents",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/consequences/events",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"consequences",
+								"events"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CreateEvent",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test Event 5FT Depth\",\n    \"depth\": 5\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/consequences/events",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"consequences",
+								"events"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DeleteEvent",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/consequences/events/0d107163-0467-46c7-b579-65f1cfad7359",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"consequences",
+								"events",
+								"0d107163-0467-46c7-b579-65f1cfad7359"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
 		{
 			"name": "RunConsequences",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
-						"id": "6733036e-0912-4b7c-8e48-1d5878255e04",
+						"id": "036da3a2-a6b7-4ab0-8dbf-fa25b92757a6",
 						"exec": [
 							"// validate JSON schema",
 							"var objschema = {",
@@ -62,14 +132,7 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_url}}/consequences/test",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"consequences",
-						"test"
-					]
+					"raw": ""
 				}
 			},
 			"response": []
@@ -89,7 +152,7 @@
 		{
 			"listen": "prerequest",
 			"script": {
-				"id": "9528000e-5f27-4e49-8d26-796bdb61a3c0",
+				"id": "5a81bf2f-d92e-44eb-949f-97f1f51c7661",
 				"type": "text/javascript",
 				"exec": [
 					""
@@ -99,7 +162,7 @@
 		{
 			"listen": "test",
 			"script": {
-				"id": "81465104-d87b-4bd8-8920-b1ad36a81754",
+				"id": "71af6698-fe71-4ce0-8321-723f318ebf53",
 				"type": "text/javascript",
 				"exec": [
 					""
