@@ -11,7 +11,13 @@
       "mode": "auto",
       "program": "${workspaceFolder}/main.go",
       "env": {
-        "CONSEQUENCES_LAMBDACONTEXT": "FALSE"
+        "CONSEQUENCES_LAMBDACONTEXT": "false",
+        "CONSEQUENCES_SKIPJWT": "true",
+        "CONSEQUENCES_DBUSER": "consequences_user",
+        "CONSEQUENCES_DBPASS": "password",
+        "CONSEQUENCES_DBNAME": "postgres",
+        "CONSEQUENCES_DBHOST": "localhost",
+        "CONSEQUENCES_DBSSLMODE": "disable"
       },
       "args": []
     }
