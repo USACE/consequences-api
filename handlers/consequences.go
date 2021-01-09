@@ -32,7 +32,7 @@ func RunConsequencesByFips() echo.HandlerFunc {
 			return c.String(http.StatusBadRequest, "Invalid Input")
 		}
 		var i = compute.FipsCode{FIPS: fips}
-		s, err := models.RunConsequencesByFips(i)
+		s, err := models.RunConsequencesByFips(i, 5.67)
 		if err != nil {
 			return c.String(http.StatusInternalServerError, err.Error())
 		}

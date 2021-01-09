@@ -98,11 +98,12 @@ func main() {
 	// public.GET("consequences/computes/:compute_id", handlers.GetCompute(db))
 	// public.GET("consequences/computes/:compute_id/result", handlers.GetComputeResult(db))
 	private.POST("consequences/computes/bbox", handlers.RunConsequencesByBoundingBox()) //have the bbox
-	private.POST("consequences/computes/fips/:fips_code", handlers.RunConsequencesByFips())
+	private.POST("consequences/computes/fips/:fips_code/:event_id", handlers.RunConsequencesByFips(db))
+	private.POST("consequences/computes/ag/xy/:x/:y/:event", handlers.RunAgConsequencesByXY())//shouldnt this be a get?
 
-	public.GET("consequences/computes", func(c echo.Context) error {
+	public.GET("consequences/endpoints", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string][]string{
-			"computes": []string{"bbox", "fips"},
+			"computes": []string{"events", "bbox", "fips"},
 		})
 	})
 
