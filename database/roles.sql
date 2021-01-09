@@ -16,7 +16,8 @@ CREATE ROLE postgis_reader;
 GRANT SELECT ON
     event,
     compute,
-    compute_result
+    compute_result,
+    v_compute
 TO consequences_reader;
 
 -- Role consequences_writer
