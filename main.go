@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	asyncer "github.com/USACE/go-simple-asyncer/asyncer"
 	"github.com/apex/gateway"
 	"github.com/jmoiron/sqlx"
 	"github.com/kelseyhightower/envconfig"
@@ -17,13 +18,15 @@ import (
 
 // Config holds all runtime configuration provided via environment variables
 type Config struct {
-	SkipJWT       bool
-	LambdaContext bool
-	DBUser        string
-	DBPass        string
-	DBName        string
-	DBHost        string
-	DBSSLMode     string
+	SkipJWT             bool
+	LambdaContext       bool
+	DBUser              string
+	DBPass              string
+	DBName              string
+	DBHost              string
+	DBSSLMode           string
+	AsyncEngine         string `envconfig:"ASYNC_ENGINE"`
+	AsyncEngineSNSTopic string `envconfig:"ASYNC_ENGINE_SNS_TOPIC"`
 }
 
 // Connection is a database connnection
@@ -66,7 +69,14 @@ func main() {
 			cfg.DBUser, cfg.DBPass, cfg.DBName, cfg.DBHost, cfg.DBSSLMode,
 		),
 	)
-	fmt.Println(db)
+
+	// acquisitionAsyncer defines async engine used to package DSS files for download
+	computeAsyncer, err := asyncer.NewAsyncer(
+		asyncer.Config{Engine: cfg.AsyncEngine, Topic: cfg.AsyncEngineSNSTopic},
+	)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 
 	e := echo.New()
 	e.Use(
@@ -94,8 +104,9 @@ func main() {
 	private.DELETE("consequences/events/:event_id", handlers.DeleteEvent(db))
 
 	// Computes
+
 	// public.GET("consequences/computes", handlers.ListComputes(db))
-	// public.GET("consequences/computes/:compute_id", handlers.GetCompute(db))
+	public.GET("consequences/computes/:compute_id", handlers.GetCompute(db))
 	// public.GET("consequences/computes/:compute_id/result", handlers.GetComputeResult(db))
 	private.POST("consequences/computes/bbox", handlers.RunConsequencesByBoundingBox()) //have the bbox
 	private.POST("consequences/computes/fips/:fips_code/:event_id", handlers.RunConsequencesByFips(db))
