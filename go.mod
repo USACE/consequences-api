@@ -4,10 +4,10 @@ go 1.15
 
 require (
 	github.com/HenryGeorgist/go-statistics v0.0.0-20201111202309-91dc7bfa4fea // indirect
-	github.com/USACE/go-consequences v0.0.0-20210107031500-d1934861d908
+	github.com/USACE/go-consequences v0.0.0-20210109163911-f485f8aeb7b4
+	github.com/USACE/go-simple-asyncer v0.0.0-20201015223104-446ae10887a8
 	github.com/apex/gateway v1.1.2
 	github.com/aws/aws-lambda-go v1.22.0 // indirect
-	github.com/USACE/go-simple-asyncer v0.0.0-20201009224357-739c4a3e35ab
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/google/uuid v1.1.4
 	github.com/jmoiron/sqlx v1.2.0
