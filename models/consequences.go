@@ -1,6 +1,8 @@
 package models
 
 import (
+	"io"
+
 	"github.com/USACE/go-consequences/compute"
 )
 
@@ -10,8 +12,8 @@ type Compute struct {
 	DepthFilePath string   `json:"depthfilepath"`
 }
 
-func ComputeByStructureFromFile(c Compute) (string, error){
-	s, err := compute.FromFile(c.DepthFilePath)
-	//compute.StreamFromFile(c.DepthFilePath, c.Writer)
+func ComputeByStructureFromFile(c Compute, w io.Writer) (string, error){
+	s, err := compute.StreamFromFile(c.DepthFilePath,w)
+	//compute.FromFile(c.DepthFilePath)
 	return s, err
 }

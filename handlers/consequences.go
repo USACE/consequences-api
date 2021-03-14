@@ -16,7 +16,10 @@ func ByStructureFromFile() echo.HandlerFunc {
 		if err := c.Bind(&i); err != nil {
 			return c.String(http.StatusBadRequest, "Invalid Input")
 		}
-		s, err := models.ComputeByStructureFromFile(i)
+		c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSONCharsetUTF8)
+		c.Response().WriteHeader(http.StatusOk)
+		//return json.NewEncoder(c.Response())
+		s, err := models.ComputeByStructureFromFile(i,c.Response())
 		if err != nil {
 			return c.String(http.StatusInternalServerError, err.Error())
 		}
