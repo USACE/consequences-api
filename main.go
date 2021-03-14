@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 
-	asyncer "github.com/USACE/go-simple-asyncer/asyncer"
 	"github.com/apex/gateway"
 	"github.com/jmoiron/sqlx"
 	"github.com/kelseyhightower/envconfig"
@@ -25,8 +24,8 @@ type Config struct {
 	DBName              string
 	DBHost              string
 	DBSSLMode           string
-	AsyncEngine         string `envconfig:"ASYNC_ENGINE"`
-	AsyncEngineSNSTopic string `envconfig:"ASYNC_ENGINE_SNS_TOPIC"`
+	//AsyncEngine         string `envconfig:"ASYNC_ENGINE"`
+	//AsyncEngineSNSTopic string `envconfig:"ASYNC_ENGINE_SNS_TOPIC"`
 }
 
 // Connection is a database connnection
@@ -69,7 +68,7 @@ func main() {
 			cfg.DBUser, cfg.DBPass, cfg.DBName, cfg.DBHost, cfg.DBSSLMode,
 		),
 	)
-
+/*
 	// acquisitionAsyncer defines async engine used to package DSS files for download
 	computeAsyncer, err := asyncer.NewAsyncer(
 		asyncer.Config{Engine: cfg.AsyncEngine, Topic: cfg.AsyncEngineSNSTopic},
@@ -77,7 +76,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-
+*/
 	e := echo.New()
 	e.Use(
 		middleware.CORS,
@@ -97,12 +96,14 @@ func main() {
 
 	// Public Routes
 	// NOTE: ALL GET REQUESTS ARE ALLOWED WITHOUT AUTHENTICATION USING JWTConfig Skipper. See appconfig/jwt.go
-
+	public.Get("consequences/structure/compute",handlers.ByStructureFromFile())
+	//public.Get("consequences/statistics/compute",handlers.ComputeConsequences_FromFile_SummaryStats())
+	/*
 	// Events
 	public.GET("consequences/events", handlers.ListEvents(db))
 	private.POST("consequences/events", handlers.CreateEvent(db))
 	private.DELETE("consequences/events/:event_id", handlers.DeleteEvent(db))
-
+	
 	// Computes
 
 	// public.GET("consequences/computes", handlers.ListComputes(db))
@@ -117,6 +118,7 @@ func main() {
 			"computes": []string{"events", "bbox", "fips"},
 		})
 	})
+	*/
 
 	if cfg.LambdaContext {
 		log.Print("starting server; Running On AWS LAMBDA")
