@@ -18,8 +18,6 @@
         "CONSEQUENCES_DBNAME": "postgres",
         "CONSEQUENCES_DBHOST": "localhost",
         "CONSEQUENCES_DBSSLMODE": "disable",
-        "CONSEQUENCES_ASYNC_ENGINE": "MOCK",
-        "CONSEQUENCES_ASYNC_ENGINE_SNS_TOPIC": "",
       },
       "args": []
     }
