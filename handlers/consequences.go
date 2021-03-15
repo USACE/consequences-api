@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/USACE/consequences-api/models"
-	"github.com/jmoiron/sqlx"
 
 	"github.com/labstack/echo/v4"
 )
@@ -17,14 +16,12 @@ func ByStructureFromFile() echo.HandlerFunc {
 			return c.String(http.StatusBadRequest, "Invalid Input")
 		}
 		c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSONCharsetUTF8)
-		c.Response().WriteHeader(http.StatusOk)
+		c.Response().WriteHeader(http.StatusOK)
 		//return json.NewEncoder(c.Response())
-		s, err := models.ComputeByStructureFromFile(i,c.Response())
+		s, err := models.ComputeByStructureFromFile(i, c.Response())
 		if err != nil {
 			return c.String(http.StatusInternalServerError, err.Error())
 		}
 		return c.JSON(http.StatusOK, s)
 	}
 }
-
-

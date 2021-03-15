@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -17,13 +16,13 @@ import (
 
 // Config holds all runtime configuration provided via environment variables
 type Config struct {
-	SkipJWT             bool
-	LambdaContext       bool
-	DBUser              string
-	DBPass              string
-	DBName              string
-	DBHost              string
-	DBSSLMode           string
+	SkipJWT       bool
+	LambdaContext bool
+	DBUser        string
+	DBPass        string
+	DBName        string
+	DBHost        string
+	DBSSLMode     string
 	//AsyncEngine         string `envconfig:"ASYNC_ENGINE"`
 	//AsyncEngineSNSTopic string `envconfig:"ASYNC_ENGINE_SNS_TOPIC"`
 }
@@ -61,22 +60,22 @@ func main() {
 	if err := envconfig.Process("consequences", &cfg); err != nil {
 		log.Fatal(err.Error())
 	}
+	/*
+		db := Connection(
+			fmt.Sprintf(
+				"user=%s password=%s dbname=%s host=%s sslmode=%s binary_parameters=yes",
+				cfg.DBUser, cfg.DBPass, cfg.DBName, cfg.DBHost, cfg.DBSSLMode,
+			),
+		)
 
-	db := Connection(
-		fmt.Sprintf(
-			"user=%s password=%s dbname=%s host=%s sslmode=%s binary_parameters=yes",
-			cfg.DBUser, cfg.DBPass, cfg.DBName, cfg.DBHost, cfg.DBSSLMode,
-		),
-	)
-/*
-	// acquisitionAsyncer defines async engine used to package DSS files for download
-	computeAsyncer, err := asyncer.NewAsyncer(
-		asyncer.Config{Engine: cfg.AsyncEngine, Topic: cfg.AsyncEngineSNSTopic},
-	)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-*/
+		// acquisitionAsyncer defines async engine used to package DSS files for download
+		computeAsyncer, err := asyncer.NewAsyncer(
+			asyncer.Config{Engine: cfg.AsyncEngine, Topic: cfg.AsyncEngineSNSTopic},
+		)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+	*/
 	e := echo.New()
 	e.Use(
 		middleware.CORS,
@@ -87,37 +86,37 @@ func main() {
 	public := e.Group("")
 
 	// Private Routes
-	private := e.Group("")
+	/*private := e.Group("")
 	if cfg.SkipJWT == true {
 		private.Use(middleware.MockIsLoggedIn)
 	} else {
 		private.Use(middleware.JWT, middleware.IsLoggedIn)
-	}
+	}*/
 
 	// Public Routes
 	// NOTE: ALL GET REQUESTS ARE ALLOWED WITHOUT AUTHENTICATION USING JWTConfig Skipper. See appconfig/jwt.go
-	public.Get("consequences/structure/compute",handlers.ByStructureFromFile())
+	public.GET("consequences/structure/compute", handlers.ByStructureFromFile())
 	//public.Get("consequences/statistics/compute",handlers.ComputeConsequences_FromFile_SummaryStats())
 	/*
-	// Events
-	public.GET("consequences/events", handlers.ListEvents(db))
-	private.POST("consequences/events", handlers.CreateEvent(db))
-	private.DELETE("consequences/events/:event_id", handlers.DeleteEvent(db))
-	
-	// Computes
+		// Events
+		public.GET("consequences/events", handlers.ListEvents(db))
+		private.POST("consequences/events", handlers.CreateEvent(db))
+		private.DELETE("consequences/events/:event_id", handlers.DeleteEvent(db))
 
-	// public.GET("consequences/computes", handlers.ListComputes(db))
-	public.GET("consequences/computes/:compute_id", handlers.GetCompute(db))
-	// public.GET("consequences/computes/:compute_id/result", handlers.GetComputeResult(db))
-	private.POST("consequences/computes/bbox", handlers.RunConsequencesByBoundingBox()) //have the bbox
-	private.POST("consequences/computes/fips/:fips_code/:event_id", handlers.RunConsequencesByFips(db))
-	private.POST("consequences/computes/ag/xy/:year/:x/:y/:arrivaltime/:duration", handlers.RunAgConsequencesByXY())//shouldnt this be a get?
+		// Computes
 
-	public.GET("consequences/endpoints", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, map[string][]string{
-			"computes": []string{"events", "bbox", "fips"},
+		// public.GET("consequences/computes", handlers.ListComputes(db))
+		public.GET("consequences/computes/:compute_id", handlers.GetCompute(db))
+		// public.GET("consequences/computes/:compute_id/result", handlers.GetComputeResult(db))
+		private.POST("consequences/computes/bbox", handlers.RunConsequencesByBoundingBox()) //have the bbox
+		private.POST("consequences/computes/fips/:fips_code/:event_id", handlers.RunConsequencesByFips(db))
+		private.POST("consequences/computes/ag/xy/:year/:x/:y/:arrivaltime/:duration", handlers.RunAgConsequencesByXY())//shouldnt this be a get?
+
+		public.GET("consequences/endpoints", func(c echo.Context) error {
+			return c.JSON(http.StatusOK, map[string][]string{
+				"computes": []string{"events", "bbox", "fips"},
+			})
 		})
-	})
 	*/
 
 	if cfg.LambdaContext {
