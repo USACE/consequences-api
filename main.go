@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -11,8 +10,9 @@ import (
 	"github.com/labstack/echo/v4"
 	_ "github.com/lib/pq"
 
-	"github.com/USACE/consequences-api/handlers"
 	"github.com/USACE/consequences-api/middleware"
+	"github.com/USACE/go-consequences/compute"
+	"github.com/USACE/go-consequences/structureprovider"
 )
 
 // Config holds all runtime configuration provided via environment variables
@@ -24,6 +24,8 @@ type Config struct {
 	DBName        string
 	DBHost        string
 	DBSSLMode     string
+	//AsyncEngine         string `envconfig:"ASYNC_ENGINE"`
+	//AsyncEngineSNSTopic string `envconfig:"ASYNC_ENGINE_SNS_TOPIC"`
 }
 
 // Connection is a database connnection
@@ -59,15 +61,22 @@ func main() {
 	if err := envconfig.Process("consequences", &cfg); err != nil {
 		log.Fatal(err.Error())
 	}
+	/*
+		db := Connection(
+			fmt.Sprintf(
+				"user=%s password=%s dbname=%s host=%s sslmode=%s binary_parameters=yes",
+				cfg.DBUser, cfg.DBPass, cfg.DBName, cfg.DBHost, cfg.DBSSLMode,
+			),
+		)
 
-	db := Connection(
-		fmt.Sprintf(
-			"user=%s password=%s dbname=%s host=%s sslmode=%s binary_parameters=yes",
-			cfg.DBUser, cfg.DBPass, cfg.DBName, cfg.DBHost, cfg.DBSSLMode,
-		),
-	)
-	fmt.Println(db)
-
+		// acquisitionAsyncer defines async engine used to package DSS files for download
+		computeAsyncer, err := asyncer.NewAsyncer(
+			asyncer.Config{Engine: cfg.AsyncEngine, Topic: cfg.AsyncEngineSNSTopic},
+		)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+	*/
 	e := echo.New()
 	e.Use(
 		middleware.CORS,
@@ -78,33 +87,51 @@ func main() {
 	public := e.Group("")
 
 	// Private Routes
-	private := e.Group("")
+	/*private := e.Group("")
 	if cfg.SkipJWT == true {
 		private.Use(middleware.MockIsLoggedIn)
 	} else {
 		private.Use(middleware.JWT, middleware.IsLoggedIn)
-	}
+	}*/
 
 	// Public Routes
 	// NOTE: ALL GET REQUESTS ARE ALLOWED WITHOUT AUTHENTICATION USING JWTConfig Skipper. See appconfig/jwt.go
-
-	// Events
-	public.GET("consequences/events", handlers.ListEvents(db))
-	private.POST("consequences/events", handlers.CreateEvent(db))
-	private.DELETE("consequences/events/:event_id", handlers.DeleteEvent(db))
-
-	// Computes
-	// public.GET("consequences/computes", handlers.ListComputes(db))
-	// public.GET("consequences/computes/:compute_id", handlers.GetCompute(db))
-	// public.GET("consequences/computes/:compute_id/result", handlers.GetComputeResult(db))
-	private.POST("consequences/computes/bbox", handlers.RunConsequencesByBoundingBox()) //have the bbox
-	private.POST("consequences/computes/fips/:fips_code", handlers.RunConsequencesByFips())
-
-	public.GET("consequences/computes", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, map[string][]string{
-			"computes": []string{"bbox", "fips"},
-		})
+	public.POST("consequences/structure/compute", func(c echo.Context) error {
+		var i Compute
+		if err := c.Bind(&i); err != nil {
+			return c.String(http.StatusBadRequest, "Invalid Input")
+		}
+		c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSONCharsetUTF8)
+		c.Response().WriteHeader(http.StatusOK)
+		if !i.valid() {
+			return c.String(http.StatusBadRequest, "File Path is invalid")
+		}
+		nsp := structureprovider.InitNSISP()
+		compute.StreamFromFileAbstract(i.DepthFilePath, nsp, c.Response())
+		return c.NoContent(http.StatusOK)
 	})
+	//public.Get("consequences/statistics/compute",handlers.ComputeConsequences_FromFile_SummaryStats())
+	/*
+		// Events
+		public.GET("consequences/events", handlers.ListEvents(db))
+		private.POST("consequences/events", handlers.CreateEvent(db))
+		private.DELETE("consequences/events/:event_id", handlers.DeleteEvent(db))
+
+		// Computes
+
+		// public.GET("consequences/computes", handlers.ListComputes(db))
+		public.GET("consequences/computes/:compute_id", handlers.GetCompute(db))
+		// public.GET("consequences/computes/:compute_id/result", handlers.GetComputeResult(db))
+		private.POST("consequences/computes/bbox", handlers.RunConsequencesByBoundingBox()) //have the bbox
+		private.POST("consequences/computes/fips/:fips_code/:event_id", handlers.RunConsequencesByFips(db))
+		private.POST("consequences/computes/ag/xy/:year/:x/:y/:arrivaltime/:duration", handlers.RunAgConsequencesByXY())//shouldnt this be a get?
+
+		public.GET("consequences/endpoints", func(c echo.Context) error {
+			return c.JSON(http.StatusOK, map[string][]string{
+				"computes": []string{"events", "bbox", "fips"},
+			})
+		})
+	*/
 
 	if cfg.LambdaContext {
 		log.Print("starting server; Running On AWS LAMBDA")
@@ -113,4 +140,13 @@ func main() {
 		log.Print("starting server")
 		log.Fatal(http.ListenAndServe("localhost:3030", e))
 	}
+}
+
+type Compute struct {
+	Name          string `json:"name"`
+	DepthFilePath string `json:"depthfilepath"`
+}
+
+func (c Compute) valid() bool {
+	return true //@TODO implement me!
 }
