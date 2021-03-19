@@ -24,7 +24,6 @@ type Consequence struct {
 }
 
 func Test_Consequences(t *testing.T) {
-
 	requestBody := Compute{Name: "myname", DepthFilePath: "/workspaces/consequences-api/data/3782_COG.tif"}
 	b, _ := json.Marshal(requestBody)
 	response, err := http.Post(
