@@ -8,10 +8,12 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	_ "github.com/lib/pq"
 
-	"github.com/USACE/consequences-api/middleware"
 	"github.com/USACE/go-consequences/compute"
+	"github.com/USACE/go-consequences/consequences"
+	"github.com/USACE/go-consequences/hazardproviders"
 	"github.com/USACE/go-consequences/structureprovider"
 )
 
@@ -78,9 +80,13 @@ func main() {
 		}
 	*/
 	e := echo.New()
-	e.Use(
+	/*e.Use(
 		middleware.CORS,
 		middleware.GZIP,
+	)*/
+	e.Use(
+		middleware.CORS(),
+		middleware.GzipWithConfig(middleware.GzipConfig{Level: 5}),
 	)
 
 	// Public Routes
@@ -107,7 +113,9 @@ func main() {
 			return c.String(http.StatusBadRequest, "File Path is invalid")
 		}
 		nsp := structureprovider.InitNSISP()
-		compute.StreamFromFileAbstract(i.DepthFilePath, nsp, c.Response())
+		srw := consequences.InitStreamingResultsWriter(c.Response())
+		dfr := hazardproviders.Init(i.DepthFilePath)
+		compute.StreamAbstract(dfr, nsp, srw)
 		return c.NoContent(http.StatusOK)
 	})
 	//public.Get("consequences/statistics/compute",handlers.ComputeConsequences_FromFile_SummaryStats())
