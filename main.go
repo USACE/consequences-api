@@ -1,10 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
-	"github.com/apex/gateway"
 	"github.com/jmoiron/sqlx"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/labstack/echo/v4"
@@ -15,19 +15,19 @@ import (
 	"github.com/USACE/go-consequences/consequences"
 	"github.com/USACE/go-consequences/hazardproviders"
 	"github.com/USACE/go-consequences/structureprovider"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 )
 
 // Config holds all runtime configuration provided via environment variables
 type Config struct {
-	SkipJWT       bool
-	LambdaContext bool
-	DBUser        string
-	DBPass        string
-	DBName        string
-	DBHost        string
-	DBSSLMode     string
-	//AsyncEngine         string `envconfig:"ASYNC_ENGINE"`
-	//AsyncEngineSNSTopic string `envconfig:"ASYNC_ENGINE_SNS_TOPIC"`
+	AWSS3Endpoint       string `envconfig:"AWS_S3_ENDPOINT"`
+	AWSS3Region         string `envconfig:"AWS_S3_REGION"`
+	AWSS3DisableSSL     bool   `envconfig:"AWS_S3_DISABLE_SSL"`
+	AWSS3ForcePathStyle bool   `envconfig:"AWS_S3_FORCE_PATH_STYLE"`
+	AWSS3Bucket         string `envconfig:"AWS_S3_BUCKET"`
 }
 
 // Connection is a database connnection
@@ -63,27 +63,19 @@ func main() {
 	if err := envconfig.Process("consequences", &cfg); err != nil {
 		log.Fatal(err.Error())
 	}
-	/*
-		db := Connection(
-			fmt.Sprintf(
-				"user=%s password=%s dbname=%s host=%s sslmode=%s binary_parameters=yes",
-				cfg.DBUser, cfg.DBPass, cfg.DBName, cfg.DBHost, cfg.DBSSLMode,
-			),
-		)
 
-		// acquisitionAsyncer defines async engine used to package DSS files for download
-		computeAsyncer, err := asyncer.NewAsyncer(
-			asyncer.Config{Engine: cfg.AsyncEngine, Topic: cfg.AsyncEngineSNSTopic},
-		)
-		if err != nil {
-			log.Fatal(err.Error())
-		}
-	*/
+	// This should probably move elsewhere
+	awsConfig := aws.NewConfig().WithRegion(cfg.AWSS3Region)
+	// Used for "minio" during development
+	awsConfig.WithDisableSSL(cfg.AWSS3DisableSSL)
+	awsConfig.WithS3ForcePathStyle(cfg.AWSS3ForcePathStyle)
+	if cfg.AWSS3Endpoint != "" {
+		awsConfig.WithEndpoint(cfg.AWSS3Endpoint)
+	}
+	newSession := session.New(awsConfig)
+	s3c := s3.New(newSession)
+
 	e := echo.New()
-	/*e.Use(
-		middleware.CORS,
-		middleware.GZIP,
-	)*/
 	e.Use(
 		middleware.CORS(),
 		middleware.GzipWithConfig(middleware.GzipConfig{Level: 5}),
@@ -107,47 +99,26 @@ func main() {
 		if err := c.Bind(&i); err != nil {
 			return c.String(http.StatusBadRequest, "Invalid Input")
 		}
+
 		c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSONCharsetUTF8)
 		c.Response().WriteHeader(http.StatusOK)
 		if !i.valid() {
 			return c.String(http.StatusBadRequest, "File Path is invalid")
 		}
+		output, err := s3c.GetObject(&s3.GetObjectInput{Bucket: aws.String(i.Name), Key: aws.String(i.DepthFilePath)})
+		if err != nil {
+			fmt.Println("There was an error")
+		}
+		fmt.Println(fmt.Sprintf("Output was %v", output))
 		nsp := structureprovider.InitNSISP()
 		srw := consequences.InitStreamingResultsWriter(c.Response())
 		dfr := hazardproviders.Init(i.DepthFilePath)
 		compute.StreamAbstract(dfr, nsp, srw)
 		return c.NoContent(http.StatusOK)
 	})
-	//public.Get("consequences/statistics/compute",handlers.ComputeConsequences_FromFile_SummaryStats())
-	/*
-		// Events
-		public.GET("consequences/events", handlers.ListEvents(db))
-		private.POST("consequences/events", handlers.CreateEvent(db))
-		private.DELETE("consequences/events/:event_id", handlers.DeleteEvent(db))
 
-		// Computes
-
-		// public.GET("consequences/computes", handlers.ListComputes(db))
-		public.GET("consequences/computes/:compute_id", handlers.GetCompute(db))
-		// public.GET("consequences/computes/:compute_id/result", handlers.GetComputeResult(db))
-		private.POST("consequences/computes/bbox", handlers.RunConsequencesByBoundingBox()) //have the bbox
-		private.POST("consequences/computes/fips/:fips_code/:event_id", handlers.RunConsequencesByFips(db))
-		private.POST("consequences/computes/ag/xy/:year/:x/:y/:arrivaltime/:duration", handlers.RunAgConsequencesByXY())//shouldnt this be a get?
-
-		public.GET("consequences/endpoints", func(c echo.Context) error {
-			return c.JSON(http.StatusOK, map[string][]string{
-				"computes": []string{"events", "bbox", "fips"},
-			})
-		})
-	*/
-
-	if cfg.LambdaContext {
-		log.Print("starting server; Running On AWS LAMBDA")
-		log.Fatal(gateway.ListenAndServe("localhost:3030", e))
-	} else {
-		log.Print("starting server")
-		log.Fatal(http.ListenAndServe("localhost:3030", e))
-	}
+	log.Print("starting server")
+	log.Fatal(http.ListenAndServe("localhost:8000", e))
 }
 
 type Compute struct {
