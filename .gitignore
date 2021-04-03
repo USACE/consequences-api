@@ -1,1 +1,4 @@
 bin/**
+
+__media/**
+!__media/README.md

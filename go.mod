@@ -3,7 +3,7 @@ module github.com/USACE/consequences-api
 go 1.15
 
 require (
-	github.com/USACE/go-consequences v0.0.0-20210330170734-b75dafca445d
+	github.com/USACE/go-consequences v0.0.0-20210403200950-e28097d934fc
 	github.com/apex/gateway v1.1.2
 	github.com/aws/aws-lambda-go v1.23.0 // indirect
 	github.com/aws/aws-sdk-go v1.38.12

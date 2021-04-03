@@ -24,10 +24,10 @@ type Consequence struct {
 }
 
 func Test_Consequences(t *testing.T) {
-	requestBody := Compute{Name: "myname", DepthFilePath: "/workspaces/consequences-api/data/3782_COG.tif"}
+	requestBody := Compute{Name: "myname", DepthFilePath: "/workspaces/consequences-api/__media/clipped_sample.tif"}
 	b, _ := json.Marshal(requestBody)
 	response, err := http.Post(
-		"http://127.0.0.1:3030/consequences/structure/compute",
+		"http://127.0.0.1:8000/consequences/structure/compute",
 		"application/json; charset=UTF-8",
 		bytes.NewReader(b),
 	)

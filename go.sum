@@ -9,6 +9,8 @@ github.com/USACE/go-consequences v0.0.0-20210326135913-fbb5043dd765 h1:vJX2pt80j
 github.com/USACE/go-consequences v0.0.0-20210326135913-fbb5043dd765/go.mod h1:KdOXA/FWskOV3EIFJKwYZCM/NjcK/UHaxVwYMI/VjPw=
 github.com/USACE/go-consequences v0.0.0-20210330170734-b75dafca445d h1:QnmTa0IQIARcAMeQEKXEYUKAbp12LtHyfAJq+65ogaw=
 github.com/USACE/go-consequences v0.0.0-20210330170734-b75dafca445d/go.mod h1:35r7GB3jL0zCyUZfGBwMUS8fC6UlrsQDUwMs1HqCBe8=
+github.com/USACE/go-consequences v0.0.0-20210403200950-e28097d934fc h1:CRglZKCD0BhW74+2ufKkS9NkHy6tvHZrwV9U4+pBC88=
+github.com/USACE/go-consequences v0.0.0-20210403200950-e28097d934fc/go.mod h1:35r7GB3jL0zCyUZfGBwMUS8fC6UlrsQDUwMs1HqCBe8=
 github.com/apex/gateway v1.1.2 h1:OWyLov8eaau8YhkYKkRuOAYqiUhpBJalBR1o+3FzX+8=
 github.com/apex/gateway v1.1.2/go.mod h1:AMTkVbz5u5Hvd6QOGhhg0JUrNgCcLVu3XNJOGntdoB4=
 github.com/aws/aws-lambda-go v1.17.0/go.mod h1:FEwgPLE6+8wcGBTe5cJN3JWurd1Ztm9zN4jsXsjzKKw=
