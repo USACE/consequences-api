@@ -16,7 +16,11 @@ services:
       - INSTRUMENTATION_AWS_S3_DISABLE_SSL=True
       - INSTRUMENTATION_AWS_S3_FORCE_PATH_STYLE=True
     ports:
-      - '8000:8000'
+      - '8000:80'
+    expose:
+      - '8000'
+    networks:
+      - outside
   minio:
     image: minio/minio
     environment:
@@ -44,3 +48,7 @@ services:
       "
     volumes:
       - ./__media:/media
+networks:
+  outside:
+    external:
+      name: consequences-api

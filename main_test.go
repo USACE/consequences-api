@@ -27,7 +27,7 @@ func Test_Consequences(t *testing.T) {
 	requestBody := Compute{Name: "myname", DepthFilePath: "/workspaces/consequences-api/__media/clipped_sample.tif"}
 	b, _ := json.Marshal(requestBody)
 	response, err := http.Post(
-		"http://127.0.0.1:8000/consequences/structure/compute",
+		"http://172.30.0.2:80/consequences/structure/compute",
 		"application/json; charset=UTF-8",
 		bytes.NewReader(b),
 	)
@@ -52,7 +52,7 @@ func Test_AWS_Consequences(t *testing.T) {
 	requestBody := Compute{Name: "media", DepthFilePath: "clipped_sample.tif"}
 	b, _ := json.Marshal(requestBody)
 	response, err := http.Post(
-		"http://localhost:8000/consequences/structure/compute",
+		"http://consequences-api_api_1:8000/consequences/structure/compute",
 		"application/json; charset=UTF-8",
 		bytes.NewReader(b),
 	)

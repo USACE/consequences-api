@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -16,6 +17,8 @@ import (
 	"github.com/USACE/go-consequences/structureprovider"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 )
 
 // Config holds all runtime configuration provided via environment variables
@@ -69,8 +72,11 @@ func main() {
 	if cfg.AWSS3Endpoint != "" {
 		awsConfig.WithEndpoint(cfg.AWSS3Endpoint)
 	}
-	//newSession := session.New(awsConfig)
-	//s3c := s3.New(newSession)
+	newSession, err1 := session.NewSession(awsConfig)
+	if err1 != nil {
+		fmt.Println(err1)
+	}
+	s3c := s3.New(newSession)
 
 	e := echo.New()
 	e.Use(
@@ -91,7 +97,9 @@ func main() {
 
 	// Public Routes
 	// NOTE: ALL GET REQUESTS ARE ALLOWED WITHOUT AUTHENTICATION USING JWTConfig Skipper. See appconfig/jwt.go
-
+	public.GET("consequences/structure/compute", func(c echo.Context) error {
+		return c.String(http.StatusOK, "Hello world.")
+	})
 	public.POST("consequences/structure/compute", func(c echo.Context) error {
 		var i Compute
 		if err := c.Bind(&i); err != nil {
@@ -103,12 +111,12 @@ func main() {
 		if !i.valid() {
 			return c.String(http.StatusBadRequest, "File Path is invalid")
 		}
-		/*output, err := s3c.GetObject(&s3.GetObjectInput{Bucket: aws.String(i.Name), Key: aws.String(i.DepthFilePath)})
+		output, err := s3c.GetObject(&s3.GetObjectInput{Bucket: aws.String(i.Name), Key: aws.String(i.DepthFilePath)})
 		if err != nil {
 			fmt.Println("There was an error")
 		}
-		fmt.Println(fmt.Sprintf("Output was %v", output))
-		*/
+		fmt.Printf("Output was %v\n", output)
+
 		nsp := structureprovider.InitNSISP()
 		srw := consequences.InitStreamingResultsWriter(c.Response())
 		dfr := hazardproviders.Init(i.DepthFilePath)
@@ -117,7 +125,7 @@ func main() {
 	})
 
 	log.Print("starting server")
-	log.Fatal(http.ListenAndServe("localhost:8000", e))
+	log.Fatal(http.ListenAndServe(":80", e))
 }
 
 type Compute struct {
