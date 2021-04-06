@@ -1,16 +1,14 @@
-FROM ubuntu:21.04
+FROM ubuntu:20.04
 ENV TZ=America/New_York
 ENV PATH=/go/bin:$PATH
 ENV GOROOT=/go
 ENV GOPATH=/src/go
-
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone &&\
     mkdir /go &&\
     mkdir -p /src/go &&\
     apt update &&\
     apt -y install gdal-bin gdal-data libgdal-dev &&\
-    apt -y install libhdf5-103-1 libhdf5-dev libhdf5-cpp-103-1 hdf5-helpers hdf5-tools &&\
     apt -y install wget &&\
     wget https://golang.org/dl/go1.15.2.linux-amd64.tar.gz -P / &&\
     tar -xvzf /go1.15.2.linux-amd64.tar.gz -C / &&\
@@ -29,5 +27,8 @@ RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=1 go build
 
 # USER user
 
-ENTRYPOINT ["/app/main"]
+ENTRYPOINT ["/app/consequences-api"]
+
+#RUN go test ./ -c
+#RUN ./consequences-api.test -test.v -test.run ^Test_AWS_Consequences
 

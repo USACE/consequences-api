@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"testing"
@@ -27,7 +28,7 @@ func Test_Consequences(t *testing.T) {
 	requestBody := Compute{Name: "myname", DepthFilePath: "/workspaces/consequences-api/__media/clipped_sample.tif"}
 	b, _ := json.Marshal(requestBody)
 	response, err := http.Post(
-		"http://172.30.0.2:80/consequences/structure/compute",
+		"http://localhost:8000/consequences/structure/compute",
 		"application/json; charset=UTF-8",
 		bytes.NewReader(b),
 	)
@@ -48,11 +49,27 @@ func Test_Consequences(t *testing.T) {
 		fmt.Println(n)
 	}
 }
+func Test_PING_AWS_Consequences(t *testing.T) {
+
+	response, err := http.Get("http://localhost:8000/consequences/structure/compute")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer response.Body.Close()
+	b, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("%s", b)
+
+}
 func Test_AWS_Consequences(t *testing.T) {
-	requestBody := Compute{Name: "media", DepthFilePath: "clipped_sample.tif"}
+	requestBody := Compute{Name: "media", DepthFilePath: "/vsis3/media/clipped_sample.tif"}
 	b, _ := json.Marshal(requestBody)
 	response, err := http.Post(
-		"http://consequences-api_api_1:8000/consequences/structure/compute",
+		"http://host.docker.internal:8000/consequences/structure/compute",
 		"application/json; charset=UTF-8",
 		bytes.NewReader(b),
 	)

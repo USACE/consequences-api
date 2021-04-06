@@ -1,26 +1,6 @@
 version: '3'
 
 services:
-  api:
-    build:
-      context: ./
-    restart: always
-    environment:
-      # NOTE: AWS_ Variables provided by execution role in deployed version
-      - AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
-      - AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-      - AWS_DEFAULT_REGION=us-east-1
-      - INSTRUMENTATION_AWS_S3_REGION=us-east-1
-      - INSTRUMENTATION_AWS_S3_BUCKET=media
-      - INSTRUMENTATION_AWS_S3_ENDPOINT=http://minio:9000
-      - INSTRUMENTATION_AWS_S3_DISABLE_SSL=True
-      - INSTRUMENTATION_AWS_S3_FORCE_PATH_STYLE=True
-    ports:
-      - '8000:80'
-    expose:
-      - '8000'
-    networks:
-      - outside
   minio:
     image: minio/minio
     environment:
@@ -48,7 +28,19 @@ services:
       "
     volumes:
       - ./__media:/media
-networks:
-  outside:
-    external:
-      name: consequences-api
+  api:
+    build:
+      context: ./
+    restart: always
+    environment:
+      - AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+      - AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+      - AWS_DEFAULT_REGION=us-east-1
+      - AWS_S3_REGION=us-east-1
+      - AWS_S3_BUCKET=media
+      - AWS_S3_ENDPOINT=minio:9000/minio
+      - AWS_S3_DISABLE_SSL=True
+      - AWS_S3_FORCE_PATH_STYLE=True
+      - AWS_HTTPS=False
+    ports:
+      - '8000:8000'
