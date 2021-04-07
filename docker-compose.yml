@@ -38,7 +38,8 @@ services:
       - AWS_DEFAULT_REGION=us-east-1
       - AWS_S3_REGION=us-east-1
       - AWS_S3_BUCKET=media
-      - AWS_S3_ENDPOINT=minio:9000/minio
+      - AWS_S3_ENDPOINT=minio:9000
+      - AWS_VIRTUAL_HOSTING=False
       - AWS_S3_DISABLE_SSL=True
       - AWS_S3_FORCE_PATH_STYLE=True
       - AWS_HTTPS=False
