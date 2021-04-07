@@ -94,9 +94,6 @@ func main() {
 
 	// Public Routes
 	// NOTE: ALL GET REQUESTS ARE ALLOWED WITHOUT AUTHENTICATION USING JWTConfig Skipper. See appconfig/jwt.go
-	public.GET("consequences/structure/compute", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello world.")
-	})
 	public.POST("consequences/structure/compute", func(c echo.Context) error {
 		var i Compute
 		if err := c.Bind(&i); err != nil {
@@ -108,13 +105,13 @@ func main() {
 		if !i.valid() {
 			return c.String(http.StatusBadRequest, "File Path is invalid")
 		}
-		//output := s3.GetObjectInput{Bucket: aws.String(i.Name), Key: aws.String(i.DepthFilePath)}
-		//fmt.Printf("Output was %v\n", output)
 		var sp consequences.StreamProvider
 		if i.InventorySource == "" || i.InventorySource == "NSI" {
 			sp = structureprovider.InitNSISP()
 		}
-		//if i.InventorySource
+		if i.InventorySource[len(i.InventorySource)-3:] == "shp" {
+			sp = structureprovider.InitSHP(i.InventorySource)
+		}
 		srw := consequences.InitStreamingResultsWriter(c.Response())
 		dfr := hazardproviders.Init(i.DepthFilePath)
 		compute.StreamAbstract(dfr, sp, srw)

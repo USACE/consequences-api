@@ -66,7 +66,9 @@ func Test_PING_AWS_Consequences(t *testing.T) {
 
 }
 func Test_AWS_Consequences(t *testing.T) {
-	requestBody := Compute{Name: "media", DepthFilePath: "/vsis3/media/clipped_sample.tif"}
+	//requestBody := Compute{Name: "media", DepthFilePath: "/vsis3/media/clipped_sample.tif", InventorySource: "NSI"}
+	//requestBody := Compute{Name: "media", DepthFilePath: "/vsis3/media/CERA_Adv29_maxwaterelev_4326_90m.tif", InventorySource: "NSI"}
+	requestBody := Compute{Name: "media", DepthFilePath: "/vsis3/media/CERA_Adv29_maxwaterelev_4326_90m.tif", InventorySource: "/vsis3/media/ORNLcentroids_LBattributes.shp"}
 	b, _ := json.Marshal(requestBody)
 	response, err := http.Post(
 		"http://host.docker.internal:8000/consequences/structure/compute",
