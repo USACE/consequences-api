@@ -110,11 +110,14 @@ func main() {
 		}
 		//output := s3.GetObjectInput{Bucket: aws.String(i.Name), Key: aws.String(i.DepthFilePath)}
 		//fmt.Printf("Output was %v\n", output)
-
-		nsp := structureprovider.InitNSISP()
+		var sp consequences.StreamProvider
+		if i.InventorySource == "" || i.InventorySource == "NSI" {
+			sp = structureprovider.InitNSISP()
+		}
+		//if i.InventorySource
 		srw := consequences.InitStreamingResultsWriter(c.Response())
 		dfr := hazardproviders.Init(i.DepthFilePath)
-		compute.StreamAbstract(dfr, nsp, srw)
+		compute.StreamAbstract(dfr, sp, srw)
 		return c.NoContent(http.StatusOK)
 	})
 
@@ -123,10 +126,14 @@ func main() {
 }
 
 type Compute struct {
-	Name          string `json:"name"`
-	DepthFilePath string `json:"depthfilepath"`
+	Name            string `json:"name"`
+	DepthFilePath   string `json:"depthfilepath"`
+	InventorySource string `json:"inventorysource"`
 }
 
 func (c Compute) valid() bool {
+
+	//validate that the input depth file path is a tif and has vsis3?
+	//validate the inventory path is NSI, a valid shp or a valid geopackage?
 	return true //@TODO implement me!
 }
