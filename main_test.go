@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"testing"
@@ -49,26 +48,13 @@ func Test_Consequences(t *testing.T) {
 		fmt.Println(n)
 	}
 }
-func Test_PING_AWS_Consequences(t *testing.T) {
-
-	response, err := http.Get("http://localhost:8000/consequences/structure/compute")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer response.Body.Close()
-	b, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Printf("%s", b)
-
-}
 func Test_AWS_Consequences(t *testing.T) {
 	//requestBody := Compute{Name: "media", DepthFilePath: "/vsis3/media/clipped_sample.tif", InventorySource: "NSI"}
 	//requestBody := Compute{Name: "media", DepthFilePath: "/vsis3/media/CERA_Adv29_maxwaterelev_4326_90m.tif", InventorySource: "NSI"}
-	requestBody := Compute{Name: "media", DepthFilePath: "/vsis3/media/CERA_Adv29_maxwaterelev_4326_90m.tif", InventorySource: "/vsis3/media/ORNLcentroids_LBattributes.shp"}
+	//requestBody := Compute{Name: "media", DepthFilePath: "/vsis3/media/CERA_Adv29_maxwaterelev_4326_90m.tif", InventorySource: "/vsis3/media/ORNLcentroids_LBattributes.shp"}
+	requestBody := Compute{Name: "media", DepthFilePath: "/vsis3/media/clipped_sample.tif", InventorySource: "NSI"} //default of stream
+	//requestBody := Compute{Name: "media", DepthFilePath: "/vsis3/media/clipped_sample.tif", InventorySource: "NSI", OutputType: "Summary"}//found bug, fixed, need to pull latest go-consequences
+	//requestBody := Compute{Name: "media", DepthFilePath: "/vsis3/media/clipped_sample.tif", InventorySource: "NSI", OutputType: "GeoJson"} //Result does not match return...
 	b, _ := json.Marshal(requestBody)
 	response, err := http.Post(
 		"http://host.docker.internal:8000/consequences/structure/compute",
@@ -87,7 +73,7 @@ func Test_AWS_Consequences(t *testing.T) {
 		if err := dec.Decode(&n); err == io.EOF {
 			break
 		} else if err != nil {
-			fmt.Printf("Error unmarshalling JSON record: %s.  Stopping Compute.\n", err)
+			panic("Error unmarshalling JSON record: %s.  Stopping Compute.\n")
 		}
 		fmt.Println(n)
 	}

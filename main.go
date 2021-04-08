@@ -94,6 +94,36 @@ func main() {
 
 	// Public Routes
 	// NOTE: ALL GET REQUESTS ARE ALLOWED WITHOUT AUTHENTICATION USING JWTConfig Skipper. See appconfig/jwt.go
+	public.GET("consequences", func(c echo.Context) error {
+		return c.String(http.StatusOK, "consequences-api v0.0.1")
+	})
+	public.POST("consequences/summary/compute", func(c echo.Context) error {
+		var i Compute
+		if err := c.Bind(&i); err != nil {
+			return c.String(http.StatusBadRequest, "Invalid Input")
+		}
+		c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSONCharsetUTF8)
+		c.Response().WriteHeader(http.StatusOK)
+		if !i.valid() {
+			return c.String(http.StatusBadRequest, "File Path is invalid")
+		}
+		var sp consequences.StreamProvider
+		if i.InventorySource == "" || i.InventorySource == "NSI" {
+			sp = structureprovider.InitNSISP()
+		}
+		if i.InventorySource[len(i.InventorySource)-3:] == "shp" {
+			sp = structureprovider.InitSHP(i.InventorySource)
+		}
+		rw := consequences.InitSummaryResultsWriter(c.Response())
+		//if output type is not summary or blank throw error?
+		if i.OutputType == "" || i.OutputType == "Summary" {
+			dfr := hazardproviders.Init(i.DepthFilePath)
+			compute.StreamAbstract(dfr, sp, rw)
+			return c.NoContent(http.StatusOK)
+		}
+		return c.String(http.StatusBadRequest, "OutputType must be blank or Summary")
+
+	})
 	public.POST("consequences/structure/compute", func(c echo.Context) error {
 		var i Compute
 		if err := c.Bind(&i); err != nil {
@@ -112,9 +142,16 @@ func main() {
 		if i.InventorySource[len(i.InventorySource)-3:] == "shp" {
 			sp = structureprovider.InitSHP(i.InventorySource)
 		}
-		srw := consequences.InitStreamingResultsWriter(c.Response())
+		var rw consequences.ResultsWriter
+		rw = consequences.InitStreamingResultsWriter(c.Response())
+		if i.OutputType == "Summary" {
+			return c.String(http.StatusBadRequest, "Summary output type detected - please use consequences/summary/compute")
+		}
+		if i.OutputType == "GeoJson" {
+			rw = consequences.InitGeoJsonResultsWriter(c.Response())
+		}
 		dfr := hazardproviders.Init(i.DepthFilePath)
-		compute.StreamAbstract(dfr, sp, srw)
+		compute.StreamAbstract(dfr, sp, rw)
 		return c.NoContent(http.StatusOK)
 	})
 
@@ -126,6 +163,7 @@ type Compute struct {
 	Name            string `json:"name"`
 	DepthFilePath   string `json:"depthfilepath"`
 	InventorySource string `json:"inventorysource"`
+	OutputType      string `json:"outputtype"`
 }
 
 func (c Compute) valid() bool {
