@@ -111,8 +111,13 @@ func main() {
 		if i.InventorySource == "" || i.InventorySource == "NSI" {
 			sp = structureprovider.InitNSISP()
 		}
-		if i.InventorySource[len(i.InventorySource)-3:] == "shp" {
-			sp = structureprovider.InitSHP(i.InventorySource)
+		if len(i.InventorySource) > 3 {
+			if i.InventorySource[len(i.InventorySource)-3:] == "shp" {
+				sp = structureprovider.InitSHP(i.InventorySource)
+			}
+			if i.InventorySource[len(i.InventorySource)-4:] == "gpgk" {
+				sp = structureprovider.InitGPK(i.InventorySource, "nsi")
+			}
 		}
 		rw := consequences.InitSummaryResultsWriter(c.Response())
 		//if output type is not summary or blank throw error?
@@ -139,9 +144,15 @@ func main() {
 		if i.InventorySource == "" || i.InventorySource == "NSI" {
 			sp = structureprovider.InitNSISP()
 		}
-		if i.InventorySource[len(i.InventorySource)-3:] == "shp" {
-			sp = structureprovider.InitSHP(i.InventorySource)
+		if len(i.InventorySource) > 3 {
+			if i.InventorySource[len(i.InventorySource)-3:] == "shp" {
+				sp = structureprovider.InitSHP(i.InventorySource)
+			}
+			if i.InventorySource[len(i.InventorySource)-4:] == "gpgk" {
+				sp = structureprovider.InitGPK(i.InventorySource, "nsi")
+			}
 		}
+
 		var rw consequences.ResultsWriter
 		rw = consequences.InitStreamingResultsWriter(c.Response())
 		if i.OutputType == "Summary" {

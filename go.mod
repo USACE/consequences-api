@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/HenryGeorgist/go-statistics v0.0.0-20210329221111-af13727c6803 // indirect
-	github.com/USACE/go-consequences v0.0.0-20210406210140-c03f399ec276
+	github.com/USACE/go-consequences v0.0.0-20210409015513-276ba7a041f0
 	github.com/aws/aws-sdk-go v1.38.12
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect

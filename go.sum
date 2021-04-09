@@ -6,6 +6,8 @@ github.com/USACE/go-consequences v0.0.0-20210403200950-e28097d934fc h1:CRglZKCD0
 github.com/USACE/go-consequences v0.0.0-20210403200950-e28097d934fc/go.mod h1:35r7GB3jL0zCyUZfGBwMUS8fC6UlrsQDUwMs1HqCBe8=
 github.com/USACE/go-consequences v0.0.0-20210406210140-c03f399ec276 h1:nLWhF3yX5QsHTjjW5CSpn7rqO90V9MAYlenZJDgGFQs=
 github.com/USACE/go-consequences v0.0.0-20210406210140-c03f399ec276/go.mod h1:oR4cfQKzpxnRucbNlQEbh7JIZkNUMKQSNwHPYMvuxRc=
+github.com/USACE/go-consequences v0.0.0-20210409015513-276ba7a041f0 h1:MgEDvQ+X19PGx4cD4Rb/LJCLTE9+PZxx4gCNTTuaWvk=
+github.com/USACE/go-consequences v0.0.0-20210409015513-276ba7a041f0/go.mod h1:oR4cfQKzpxnRucbNlQEbh7JIZkNUMKQSNwHPYMvuxRc=
 github.com/aws/aws-sdk-go v1.38.12 h1:khtODkUna3iF53Cg3dCF4e6oWgrAEbZDU4x1aq+G0WY=
 github.com/aws/aws-sdk-go v1.38.12/go.mod h1:hcU610XS61/+aQV88ixoOzUoG7v3b31pl2zKMmprdro=
 github.com/cockroachdb/apd v1.1.0 h1:3LFP3629v+1aKXU5Q37mxmRxX/pIu1nijXydLShEq5I=
