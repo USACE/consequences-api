@@ -41,7 +41,7 @@ func Test_Consequences_IsLive(t *testing.T) {
 	fmt.Printf("%s", b)
 }
 func Test_Structure_NSI_Stream(t *testing.T) {
-	requestBody := Compute{Name: "media", DepthFilePath: "/vsis3/media/clipped_sample.tif", InventorySource: "NSI"} //default of stream
+	requestBody := Compute{DepthFilePath: "/vsis3/media/clipped_sample.tif", InventorySource: "NSI"} //default of stream
 	b, _ := json.Marshal(requestBody)
 	response, err := http.Post(
 		"http://host.docker.internal:8000/consequences/structure/compute",
@@ -66,7 +66,7 @@ func Test_Structure_NSI_Stream(t *testing.T) {
 	}
 }
 func Test_Structure_SHP_Stream(t *testing.T) {
-	requestBody := Compute{Name: "media", DepthFilePath: "/vsis3/media/CERA_Adv29_maxwaterelev_4326_90m.tif", InventorySource: "/vsis3/media/ORNLcentroids_LBattributes.shp"}
+	requestBody := Compute{DepthFilePath: "/vsis3/media/CERA_Adv29_maxwaterelev_4326_90m.tif", InventorySource: "/vsis3/media/ORNLcentroids_LBattributes.shp"}
 
 	b, _ := json.Marshal(requestBody)
 	response, err := http.Post(
@@ -92,7 +92,7 @@ func Test_Structure_SHP_Stream(t *testing.T) {
 	}
 }
 func Test_Structure_NSI_GeoJSON(t *testing.T) {
-	requestBody := Compute{Name: "media", DepthFilePath: "/vsis3/media/clipped_sample.tif", InventorySource: "NSI", OutputType: "GeoJson"}
+	requestBody := Compute{DepthFilePath: "/vsis3/media/clipped_sample.tif", InventorySource: "NSI", OutputType: "GeoJson"}
 	b, _ := json.Marshal(requestBody)
 	response, err := http.Post(
 		"http://host.docker.internal:8000/consequences/structure/compute",
@@ -112,7 +112,7 @@ func Test_Structure_NSI_GeoJSON(t *testing.T) {
 	fmt.Printf("%s", result)
 }
 func Test_Structure_SHP_GeoJSON(t *testing.T) {
-	requestBody := Compute{Name: "media", DepthFilePath: "/vsis3/media/CERA_Adv29_maxwaterelev_4326_90m.tif", InventorySource: "/vsis3/media/ORNLcentroids_LBattributes.shp", OutputType: "GeoJson"}
+	requestBody := Compute{DepthFilePath: "/vsis3/media/CERA_Adv29_maxwaterelev_4326_90m.tif", InventorySource: "/vsis3/media/ORNLcentroids_LBattributes.shp", OutputType: "GeoJson"}
 	b, _ := json.Marshal(requestBody)
 	response, err := http.Post(
 		"http://host.docker.internal:8000/consequences/structure/compute",
@@ -132,7 +132,7 @@ func Test_Structure_SHP_GeoJSON(t *testing.T) {
 	fmt.Printf("%s", result)
 }
 func Test_Summary_NSI(t *testing.T) {
-	requestBody := Compute{Name: "media", DepthFilePath: "/vsis3/media/clipped_sample.tif", InventorySource: "NSI", OutputType: "Summary"}
+	requestBody := Compute{DepthFilePath: "/vsis3/media/clipped_sample.tif", InventorySource: "NSI", OutputType: "Summary"}
 	b, _ := json.Marshal(requestBody)
 	response, err := http.Post(
 		"http://host.docker.internal:8000/consequences/summary/compute",
@@ -152,7 +152,7 @@ func Test_Summary_NSI(t *testing.T) {
 	fmt.Printf("%s", result)
 }
 func Test_Summary_SHP(t *testing.T) {
-	requestBody := Compute{Name: "media", DepthFilePath: "/vsis3/media/CERA_Adv29_maxwaterelev_4326_90m.tif", InventorySource: "/vsis3/media/ORNLcentroids_LBattributes.shp", OutputType: "Summary"}
+	requestBody := Compute{DepthFilePath: "/vsis3/media/CERA_Adv29_maxwaterelev_4326_90m.tif", InventorySource: "/vsis3/media/ORNLcentroids_LBattributes.shp", OutputType: "Summary"}
 	b, _ := json.Marshal(requestBody)
 	response, err := http.Post(
 		"http://host.docker.internal:8000/consequences/summary/compute",

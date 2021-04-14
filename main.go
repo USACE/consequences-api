@@ -104,7 +104,7 @@ func main() {
 		return c.String(http.StatusOK, "consequences-api v0.0.1") //should probably have this pick up from an env variable for version info.
 	})
 	public.GET("consequences/events/", func(c echo.Context) error {
-		resp, err := s3c.ListObjectsV2(&s3.ListObjectsV2Input{Bucket: aws.String("media")})
+		resp, err := s3c.ListObjectsV2(&s3.ListObjectsV2Input{Bucket: &cfg.AWSS3Bucket})
 		var list string
 		if err != nil {
 			if aerr, ok := err.(awserr.Error); ok {
@@ -164,19 +164,11 @@ func main() {
 			dfr := hazardproviders.Init(i.DepthFilePath)
 			compute.StreamAbstract(dfr, sp, rw)
 			rw.Close()
-			reader := bytes.NewReader(vrw.Bytes())
-			input := &s3.PutObjectInput{
-				Bucket:        aws.String("media"),
-				Body:          reader,
-				ContentLength: aws.Int64(int64(reader.Len())),
-				Key:           &s3Path,
-			}
-			s3output, err := s3c.PutObject(input)
+			result, err := writeToS3(*vrw, s3Path, cfg, s3c)
 			if err != nil {
-				return c.String(http.StatusBadRequest, "ERROR RECIEVED "+err.Error()+"\n")
+				return c.String(http.StatusBadRequest, "Something went wrong with writing results.")
 			}
-			fmt.Print(s3output)
-			return c.String(http.StatusOK, "OUTPUT WAS: "+s3output.String()+"\n")
+			return c.String(http.StatusOK, "OUTPUT WAS: "+result+"\n")
 		}
 		return c.String(http.StatusBadRequest, "OutputType must be blank or Summary")
 
@@ -222,27 +214,33 @@ func main() {
 		dfr := hazardproviders.Init(i.DepthFilePath)
 		compute.StreamAbstract(dfr, sp, rw)
 		rw.Close()
-		reader := bytes.NewReader(vrw.Bytes())
-		input := &s3.PutObjectInput{
-			Bucket:        aws.String("media"),
-			Body:          reader,
-			ContentLength: aws.Int64(int64(reader.Len())),
-			Key:           &s3Path,
-		}
-		s3output, err := s3c.PutObject(input)
+		result, err := writeToS3(*vrw, s3Path, cfg, s3c)
 		if err != nil {
-			return c.String(http.StatusBadRequest, "ERROR RECIEVED "+err.Error()+"\n")
+			return c.String(http.StatusBadRequest, "Something went wrong with writing results.")
 		}
-		fmt.Print(s3output)
-		return c.String(http.StatusOK, "OUTPUT WAS: "+s3output.String()+"\n")
+		return c.String(http.StatusOK, "OUTPUT WAS: "+result+"\n")
 
 	})
 	log.Print("starting server")
 	log.Fatal(http.ListenAndServe(":8000", e))
 }
+func writeToS3(vrw consequences.VirtualResultsWriter, s3Path string, cfg Config, s3c *s3.S3) (string, error) {
+	reader := bytes.NewReader(vrw.Bytes())
+	input := &s3.PutObjectInput{
+		Bucket:        &cfg.AWSS3Bucket,
+		Body:          reader,
+		ContentLength: aws.Int64(int64(reader.Len())),
+		Key:           &s3Path,
+	}
+	s3output, err := s3c.PutObject(input)
+	if err != nil {
+		return "", err
+	}
+	//fmt.Print(s3output)
+	return *s3output.ETag, nil
+}
 
 type Compute struct {
-	Name            string `json:"name"`
 	DepthFilePath   string `json:"depthfilepath"`
 	InventorySource string `json:"inventorysource"`
 	OutputType      string `json:"outputtype"`
