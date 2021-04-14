@@ -122,9 +122,11 @@ func main() {
 			return c.String(http.StatusBadRequest, "something bad happened.")
 		}
 		for _, item := range resp.Contents {
-			if len(list) > 3 {
-				if list[len(list)-3:] == ".tif" {
-					list += *item.Key + "\n"
+			path := *item.Key
+			if len(path) > 3 {
+				//fmt.Println(path)
+				if path[len(path)-3:] == "tif" {
+					list += path + "\n"
 				}
 			}
 		}
@@ -161,6 +163,7 @@ func main() {
 			s3Path := filename[:len(filename)-4] + "_summary_consequences.json"
 			dfr := hazardproviders.Init(i.DepthFilePath)
 			compute.StreamAbstract(dfr, sp, rw)
+			rw.Close()
 			reader := bytes.NewReader(vrw.Bytes())
 			input := &s3.PutObjectInput{
 				Bucket:        aws.String("media"),
@@ -218,6 +221,7 @@ func main() {
 		s3Path := filename[:len(filename)-4] + outputType + "_consequences.json"
 		dfr := hazardproviders.Init(i.DepthFilePath)
 		compute.StreamAbstract(dfr, sp, rw)
+		rw.Close()
 		reader := bytes.NewReader(vrw.Bytes())
 		input := &s3.PutObjectInput{
 			Bucket:        aws.String("media"),
