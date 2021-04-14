@@ -8,6 +8,12 @@ github.com/USACE/go-consequences v0.0.0-20210406210140-c03f399ec276 h1:nLWhF3yX5
 github.com/USACE/go-consequences v0.0.0-20210406210140-c03f399ec276/go.mod h1:oR4cfQKzpxnRucbNlQEbh7JIZkNUMKQSNwHPYMvuxRc=
 github.com/USACE/go-consequences v0.0.0-20210409015513-276ba7a041f0 h1:MgEDvQ+X19PGx4cD4Rb/LJCLTE9+PZxx4gCNTTuaWvk=
 github.com/USACE/go-consequences v0.0.0-20210409015513-276ba7a041f0/go.mod h1:oR4cfQKzpxnRucbNlQEbh7JIZkNUMKQSNwHPYMvuxRc=
+github.com/USACE/go-consequences v0.0.0-20210414014814-6c4328c36ab7 h1:53mB5IW3U8DqzqjqVxMKUBQPXMs0bVJzrqyomdq9D+k=
+github.com/USACE/go-consequences v0.0.0-20210414014814-6c4328c36ab7/go.mod h1:oR4cfQKzpxnRucbNlQEbh7JIZkNUMKQSNwHPYMvuxRc=
+github.com/USACE/go-consequences v0.0.0-20210414022746-3c421ce6d0bb h1:HeJq/Yg2z3BoiO62eqAtzsHpYXUdCKg2st5lAp4nytw=
+github.com/USACE/go-consequences v0.0.0-20210414022746-3c421ce6d0bb/go.mod h1:oR4cfQKzpxnRucbNlQEbh7JIZkNUMKQSNwHPYMvuxRc=
+github.com/USACE/go-consequences v0.0.0-20210414023423-1217400c78d3 h1:pk0OA64K8ReVUbk6i+5TfKm07k8tYHsX8UWgCn5+Ch4=
+github.com/USACE/go-consequences v0.0.0-20210414023423-1217400c78d3/go.mod h1:oR4cfQKzpxnRucbNlQEbh7JIZkNUMKQSNwHPYMvuxRc=
 github.com/aws/aws-sdk-go v1.38.12 h1:khtODkUna3iF53Cg3dCF4e6oWgrAEbZDU4x1aq+G0WY=
 github.com/aws/aws-sdk-go v1.38.12/go.mod h1:hcU610XS61/+aQV88ixoOzUoG7v3b31pl2zKMmprdro=
 github.com/cockroachdb/apd v1.1.0 h1:3LFP3629v+1aKXU5Q37mxmRxX/pIu1nijXydLShEq5I=

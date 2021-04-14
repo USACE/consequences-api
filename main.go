@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bytes"
+	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/kelseyhightower/envconfig"
@@ -16,6 +19,9 @@ import (
 	"github.com/USACE/go-consequences/structureprovider"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 )
 
 // Config holds all runtime configuration provided via environment variables
@@ -69,11 +75,11 @@ func main() {
 	if cfg.AWSS3Endpoint != "" {
 		awsConfig.WithEndpoint(cfg.AWSS3Endpoint)
 	}
-	/*newSession, err1 := session.NewSession(awsConfig)
+	newSession, err1 := session.NewSession(awsConfig)
 	if err1 != nil {
 		fmt.Println(err1)
 	}
-	s3c := s3.New(newSession)*/
+	s3c := s3.New(newSession)
 
 	e := echo.New()
 	e.Use(
@@ -95,7 +101,34 @@ func main() {
 	// Public Routes
 	// NOTE: ALL GET REQUESTS ARE ALLOWED WITHOUT AUTHENTICATION USING JWTConfig Skipper. See appconfig/jwt.go
 	public.GET("consequences", func(c echo.Context) error {
-		return c.String(http.StatusOK, "consequences-api v0.0.1")
+		return c.String(http.StatusOK, "consequences-api v0.0.1") //should probably have this pick up from an env variable for version info.
+	})
+	public.GET("consequences/events/", func(c echo.Context) error {
+		resp, err := s3c.ListObjectsV2(&s3.ListObjectsV2Input{Bucket: aws.String("media")})
+		var list string
+		if err != nil {
+			if aerr, ok := err.(awserr.Error); ok {
+				switch aerr.Code() {
+				case s3.ErrCodeNoSuchBucket:
+					fmt.Println(s3.ErrCodeNoSuchBucket, aerr.Error())
+				default:
+					fmt.Println(aerr.Error())
+				}
+			} else {
+				// Print the error, cast err to awserr.Error to get the Code and
+				// Message from an error.
+				fmt.Println(err.Error())
+			}
+			return c.String(http.StatusBadRequest, "something bad happened.")
+		}
+		for _, item := range resp.Contents {
+			if len(list) > 3 {
+				if list[len(list)-3:] == ".tif" {
+					list += *item.Key + "\n"
+				}
+			}
+		}
+		return c.String(http.StatusOK, list)
 	})
 	public.POST("consequences/summary/compute", func(c echo.Context) error {
 		var i Compute
@@ -119,12 +152,28 @@ func main() {
 				sp = structureprovider.InitGPK(i.InventorySource, "nsi")
 			}
 		}
-		rw := consequences.InitSummaryResultsWriter(c.Response())
+		vrw := consequences.InitVirtualResultsWriter()
+		rw := consequences.InitSummaryResultsWriter(vrw)
+		parts := strings.Split(i.DepthFilePath, "/")
+		filename := parts[len(parts)-1]
 		//if output type is not summary or blank throw error?
 		if i.OutputType == "" || i.OutputType == "Summary" {
+			s3Path := filename[:len(filename)-4] + "_summary_consequences.json"
 			dfr := hazardproviders.Init(i.DepthFilePath)
 			compute.StreamAbstract(dfr, sp, rw)
-			return c.NoContent(http.StatusOK)
+			reader := bytes.NewReader(vrw.Bytes())
+			input := &s3.PutObjectInput{
+				Bucket:        aws.String("media"),
+				Body:          reader,
+				ContentLength: aws.Int64(int64(reader.Len())),
+				Key:           &s3Path,
+			}
+			s3output, err := s3c.PutObject(input)
+			if err != nil {
+				return c.String(http.StatusBadRequest, "ERROR RECIEVED "+err.Error()+"\n")
+			}
+			fmt.Print(s3output)
+			return c.String(http.StatusOK, "OUTPUT WAS: "+s3output.String()+"\n")
 		}
 		return c.String(http.StatusBadRequest, "OutputType must be blank or Summary")
 
@@ -152,20 +201,38 @@ func main() {
 				sp = structureprovider.InitGPK(i.InventorySource, "nsi")
 			}
 		}
+		parts := strings.Split(i.DepthFilePath, "/")
+		filename := parts[len(parts)-1]
 
+		vrw := consequences.InitVirtualResultsWriter()
 		var rw consequences.ResultsWriter
-		rw = consequences.InitStreamingResultsWriter(c.Response())
+		rw = consequences.InitStreamingResultsWriter(vrw)
+		outputType := "_streaming"
 		if i.OutputType == "Summary" {
 			return c.String(http.StatusBadRequest, "Summary output type detected - please use consequences/summary/compute")
 		}
 		if i.OutputType == "GeoJson" {
-			rw = consequences.InitGeoJsonResultsWriter(c.Response())
+			rw = consequences.InitGeoJsonResultsWriter(vrw)
+			outputType = "_geojson"
 		}
+		s3Path := filename[:len(filename)-4] + outputType + "_consequences.json"
 		dfr := hazardproviders.Init(i.DepthFilePath)
 		compute.StreamAbstract(dfr, sp, rw)
-		return c.NoContent(http.StatusOK)
-	})
+		reader := bytes.NewReader(vrw.Bytes())
+		input := &s3.PutObjectInput{
+			Bucket:        aws.String("media"),
+			Body:          reader,
+			ContentLength: aws.Int64(int64(reader.Len())),
+			Key:           &s3Path,
+		}
+		s3output, err := s3c.PutObject(input)
+		if err != nil {
+			return c.String(http.StatusBadRequest, "ERROR RECIEVED "+err.Error()+"\n")
+		}
+		fmt.Print(s3output)
+		return c.String(http.StatusOK, "OUTPUT WAS: "+s3output.String()+"\n")
 
+	})
 	log.Print("starting server")
 	log.Fatal(http.ListenAndServe(":8000", e))
 }
