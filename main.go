@@ -202,6 +202,7 @@ func main() {
 		vrw := consequences.InitVirtualResultsWriter()
 		var rw consequences.ResultsWriter
 		rw = consequences.InitStreamingResultsWriter(vrw)
+		dfr := hazardproviders.Init(i.DepthFilePath)
 		outputType := "_streaming"
 		if i.OutputType == "Summary" {
 			return c.String(http.StatusBadRequest, "Summary output type detected - please use consequences/summary/compute")
@@ -211,14 +212,28 @@ func main() {
 			outputType = "_geojson"
 		}
 		s3Path := filename[:len(filename)-4] + outputType + "_consequences.json"
-		dfr := hazardproviders.Init(i.DepthFilePath)
-		compute.StreamAbstract(dfr, sp, rw)
-		rw.Close()
-		result, err := writeToS3(*vrw, s3Path, cfg, s3c)
-		if err != nil {
-			return c.String(http.StatusBadRequest, "Something went wrong with writing results.")
+		if i.OutputType == "ESRI SHP" {
+			outputType = "_shp"
+			name := filename[:len(filename)-4] + outputType + "_consequences"
+			s3Path = i.DepthFilePath[:len(i.DepthFilePath)-4] + outputType + "_consequences"
+
+			fmt.Println(s3Path)
+			rw = consequences.InitShpResultsWriter(s3Path, name)
+			go func() {
+				compute.StreamAbstract(dfr, sp, rw)
+				rw.Close()
+			}()
+			return c.String(http.StatusOK, "Shapefile was written named "+name)
+		} else {
+
+			compute.StreamAbstract(dfr, sp, rw)
+			rw.Close()
+			result, err := writeToS3(*vrw, s3Path, cfg, s3c)
+			if err != nil {
+				return c.String(http.StatusBadRequest, "Something went wrong with writing results.")
+			}
+			return c.String(http.StatusOK, "OUTPUT WAS: "+result+"\n")
 		}
-		return c.String(http.StatusOK, "OUTPUT WAS: "+result+"\n")
 
 	})
 	log.Print("starting server")

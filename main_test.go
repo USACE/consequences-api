@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strings"
 	"testing"
 )
 
@@ -131,6 +130,26 @@ func Test_Structure_SHP_GeoJSON(t *testing.T) {
 
 	fmt.Printf("%s", result)
 }
+func Test_Structure_NSI_Shp(t *testing.T) {
+	requestBody := Compute{DepthFilePath: "/vsis3/media/clipped_sample.tif", InventorySource: "NSI", OutputType: "ESRI SHP"} //default of stream
+	b, _ := json.Marshal(requestBody)
+	response, err := http.Post(
+		"http://host.docker.internal:8000/consequences/structure/compute",
+		"application/json; charset=UTF-8",
+		bytes.NewReader(b),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer response.Body.Close()
+	result, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("%s", result)
+}
 func Test_Summary_NSI(t *testing.T) {
 	requestBody := Compute{DepthFilePath: "/vsis3/media/clipped_sample.tif", InventorySource: "NSI", OutputType: "Summary"}
 	b, _ := json.Marshal(requestBody)
@@ -158,24 +177,6 @@ func Test_Summary_SHP(t *testing.T) {
 		"http://host.docker.internal:8000/consequences/summary/compute",
 		"application/json; charset=UTF-8",
 		bytes.NewReader(b),
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer response.Body.Close()
-	result, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Printf("%s", result)
-}
-func Test_Test_FileWrite(t *testing.T) {
-	response, err := http.Post(
-		"http://host.docker.internal:8000/consequences/test/",
-		"application/json; charset=UTF-8",
-		strings.NewReader("hello."),
 	)
 	if err != nil {
 		log.Fatal(err)
